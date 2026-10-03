@@ -1,4 +1,4 @@
-const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api').replace(/\/$/, '');
+const API_BASE_URL = 'https://ustamol.onrender.com/api';
 
 async function request(path, options = {}) {
   let response;
@@ -89,14 +89,32 @@ function toWorkerPayload(listing) {
   };
 }
 
-export async function fetchJobListings() {
-  const listings = await request('/job-listings');
+function cityQuery(city) {
+  const value = String(city || '').trim();
+  return value ? `?city=${encodeURIComponent(value)}` : '';
+}
+
+export async function getJobListings(city) {
+  const listings = await request(`/job-listings${cityQuery(city)}`);
   return listings.map(normalizeJobListing);
 }
 
-export async function fetchWorkerListings() {
-  const listings = await request('/worker-listings');
+export async function getWorkerListings(city) {
+  const listings = await request(`/worker-listings${cityQuery(city)}`);
   return listings.map(normalizeWorkerListing);
+}
+
+export const fetchJobListings = getJobListings;
+export const fetchWorkerListings = getWorkerListings;
+
+export async function fetchListings(city = '') {
+  const normalizedCity = String(city || '').trim();
+  console.log("Filtreyle ilanlar \u00E7ekiliyor:", normalizedCity);
+  const [jobListings, workerListings] = await Promise.all([
+    getJobListings(normalizedCity),
+    getWorkerListings(normalizedCity),
+  ]);
+  return { jobListings, workerListings };
 }
 
 export async function createJobListing(listing) {

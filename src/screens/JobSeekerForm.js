@@ -3,6 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'r
 import { useRouter } from 'expo-router';
 import { useListings } from '../context/ListingContext';
 import FormField from '../components/FormField';
+import CityPicker from '../components/CityPicker';
 import PublishButton from '../components/PublishButton';
 import ScreenHeader from '../components/ScreenHeader';
 import { formStyles } from './forms.styles';
@@ -65,11 +66,9 @@ export default function JobSeekerForm() {
         description: `${form.occupation.trim()} alanında iş arıyor.`,
       });
 
-      Alert.alert('İlanın eklendi', 'İş arayanlar listesinde görüntüleyebilirsin.', [
-        {
-          text: 'İş Arayanları Gör',
-          onPress: () => router.push({ pathname: '/listings', params: { tab: 'workers' } }),
-        },
+      setForm({ fullName: '', phone: '', age: '', city: '', occupation: '', workAreas: '' });
+      Alert.alert('Ba\u015Far\u0131l\u0131', '\u0130lan\u0131n\u0131z ba\u015Far\u0131yla olu\u015Fturuldu!', [
+        { text: 'Tamam', onPress: () => router.replace({ pathname: '/listings', params: { tab: 'workers' } }) },
       ]);
     } catch (error) {
       Alert.alert('İlan eklenemedi', error.message);
@@ -128,12 +127,11 @@ export default function JobSeekerForm() {
             keyboardType="number-pad"
             maxLength={2}
           />
-          <FormField
-            label="Yaşadığınız Şehir"
-            placeholder="Örn. Bolu"
+          <CityPicker
+            label={"Ya\u015Fad\u0131\u011F\u0131n\u0131z \u015Eehir"}
+            placeholder={"\u0130l se\u00E7in"}
             value={form.city}
-            onChangeText={updateField('city')}
-            autoCapitalize="words"
+            onValueChange={updateField('city')}
           />
 
           <Text style={formStyles.sectionLabel}>İŞ DENEYİMİ VE TERCİHLER</Text>
@@ -155,6 +153,7 @@ export default function JobSeekerForm() {
             title={isSubmitting ? 'Gönderiliyor…' : 'İlanımı Yayımla'}
             onPress={publishListing}
             disabled={isSubmitting}
+            loading={isSubmitting}
           />
           <Text style={formStyles.note}>
             İlanı yayımlamak için API sunucusu ve MongoDB bağlantısı açık olmalıdır.

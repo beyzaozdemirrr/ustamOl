@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useListings } from '../context/ListingContext';
 import FormField from '../components/FormField';
+import CityPicker from '../components/CityPicker';
 import PublishButton from '../components/PublishButton';
 import ScreenHeader from '../components/ScreenHeader';
 import { formStyles } from './forms.styles';
@@ -82,11 +83,10 @@ export default function EmployerForm() {
         payPeriod,
       });
 
-      Alert.alert('İş ilanı eklendi', 'İş ilanları listesinde görüntüleyebilirsin.', [
-        {
-          text: 'İş İlanlarını Gör',
-          onPress: () => router.push({ pathname: '/listings', params: { tab: 'jobs' } }),
-        },
+      setForm({ businessName: '', phone: '', city: '', address: '', description: '', pay: '' });
+      setPayPeriod('G\u00FCnl\u00FCk');
+      Alert.alert('Ba\u015Far\u0131l\u0131', '\u0130lan\u0131n\u0131z ba\u015Far\u0131yla olu\u015Fturuldu!', [
+        { text: 'Tamam', onPress: () => router.replace({ pathname: '/listings', params: { tab: 'jobs' } }) },
       ]);
     } catch (error) {
       Alert.alert('İş ilanı eklenemedi', error.message);
@@ -137,12 +137,11 @@ export default function EmployerForm() {
             keyboardType="phone-pad"
             maxLength={15}
           />
-          <FormField
-            label="Şehir"
-            placeholder="Örn. Bolu"
+          <CityPicker
+            label={"\u015Eehir"}
+            placeholder={"\u0130l se\u00E7in"}
             value={form.city}
-            onChangeText={updateField('city')}
-            autoCapitalize="words"
+            onValueChange={updateField('city')}
           />
           <FormField
             label="İş Yeri Adresi / Konumu"
@@ -192,6 +191,7 @@ export default function EmployerForm() {
             title={isSubmitting ? 'Gönderiliyor…' : 'İş İlanı Yayımla'}
             onPress={publishListing}
             disabled={isSubmitting}
+            loading={isSubmitting}
           />
           <Text style={formStyles.note}>
             İlanı yayımlamak için API sunucusu ve MongoDB bağlantısı açık olmalıdır.

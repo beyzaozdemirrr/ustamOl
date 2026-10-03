@@ -1,7 +1,7 @@
-import { Text, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { componentStyles } from './components.styles';
 
-export default function PublishButton({ title, onPress, disabled = false }) {
+export default function PublishButton({ title, onPress, disabled = false, loading = false }) {
   return (
     <TouchableOpacity
       accessibilityRole="button"
@@ -11,7 +11,10 @@ export default function PublishButton({ title, onPress, disabled = false }) {
       onPress={onPress}
       style={[componentStyles.publishButton, disabled && componentStyles.publishButtonDisabled]}
     >
-      <Text style={componentStyles.publishButtonText}>{title}</Text>
+      <View style={componentStyles.publishButtonContent}>
+        {loading && <ActivityIndicator color="#FFFFFF" size="small" />}
+        <Text style={componentStyles.publishButtonText}>{title}</Text>
+      </View>
     </TouchableOpacity>
   );
 }

@@ -1,7 +1,9 @@
-import { ActivityIndicator, FlatList, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useListings } from '../context/ListingContext';
 import { listingStyles as styles } from './ListingsScreen.styles';
+import { CITIES } from '../constants/cities';
 
 const tabs = [
   { id: 'jobs', label: 'İş İlanları' },
@@ -59,7 +61,16 @@ function ListingCard({ item, isWorker, onPress }) {
 export default function ListingsScreen() {
   const router = useRouter();
   const { tab } = useLocalSearchParams();
-  const { jobListings, workerListings, isLoading, error, refreshListings } = useListings();
+  const { jobListings, workerListings, selectedCity, setCityFilter, fetchListings, refreshListings, isLoading, error } = useListings();
+  const [isCityPickerVisible, setCityPickerVisible] = useState(false);
+  const [citySearchText, setCitySearchText] = useState('');
+  const matchingCities = CITIES.filter((city) =>
+    city.toLocaleLowerCase('tr').includes(citySearchText.trim().toLocaleLowerCase('tr')),
+  );
+  const closeCityPicker = () => {
+    setCityPickerVisible(false);
+    setCitySearchText('');
+  };
   const activeTab = tab === 'workers' ? 'workers' : 'jobs';
   const isWorkerTab = activeTab === 'workers';
   const data = isWorkerTab ? workerListings : jobListings;
@@ -105,6 +116,83 @@ export default function ListingsScreen() {
             );
           })}
         </View>
+
+        <View style={styles.filterBlock}>
+          <Text style={styles.filterLabel}>{"\u015Eehir filtresi"}</Text>
+          <View style={styles.filterControls}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={selectedCity || '\u0054\u00FCm \u015Eehirler'}
+              onPress={() => {
+                setCitySearchText('');
+                setCityPickerVisible(true);
+              }}
+              style={[styles.cityPicker, styles.cityPickerExpanded]}
+            >
+              <Text numberOfLines={1} style={styles.cityPickerText}>{selectedCity || '\u0054\u00FCm \u015Eehirler'}</Text>
+              <Text style={styles.cityPickerChevron}>{"\u2304"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => {
+                console.log("Ara butonuna bas\u0131ld\u0131, aran\u0131yor:", selectedCity);
+                fetchListings(selectedCity);
+              }}
+              style={styles.searchButton}
+            >
+              {isLoading ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Text style={styles.searchButtonText}>Ara</Text>}
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={() => {
+              setCitySearchText('');
+              setCityFilter('');
+              fetchListings('');
+            }}
+            style={styles.clearFilterButton}
+          >
+            <Text style={styles.clearFilterText}>{"\u0054\u00FCm \u015Eehirleri G\u00F6ster"}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Modal transparent visible={isCityPickerVisible} animationType="fade" onRequestClose={closeCityPicker}>
+          <Pressable style={styles.modalBackdrop} onPress={closeCityPicker}>
+            <View style={styles.cityPickerSheet}>
+              <Text style={styles.cityPickerTitle}>{"\u015Eehir se\u00E7"}</Text>
+              <TextInput
+                accessibilityLabel={"\u015Eehir ara"}
+                placeholder={"\u015Eehir ad\u0131n\u0131 yaz"}
+                placeholderTextColor="#91A0B2"
+                value={citySearchText}
+                onChangeText={(value) => {
+                  setCitySearchText(value);
+                  setCityFilter(value);
+                }}
+                autoCapitalize="words"
+                style={styles.citySearch}
+              />
+              <FlatList
+                data={[{ key: '', label: '\u0054\u00FCm \u015Eehirler' }, ...matchingCities.map((city) => ({ key: city, label: city }))]}
+                keyExtractor={(item) => item.key || 'all-cities'}
+                keyboardShouldPersistTaps="handled"
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    onPress={() => {
+                      setCityFilter(item.key);
+                      closeCityPicker();
+                    }}
+                    style={styles.cityOption}
+                  >
+                    <Text style={[styles.cityOptionText, selectedCity === item.key && styles.cityOptionSelected]}>{item.label}</Text>
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={<Text style={styles.emptyCities}>{"\u015Eehir listesi bulunamad\u0131."}</Text>}
+              />
+            </View>
+          </Pressable>
+        </Modal>
 
         <Text style={styles.resultCount}>
           {data.length} {isWorkerTab ? 'çalışan profili' : 'iş ilanı'}

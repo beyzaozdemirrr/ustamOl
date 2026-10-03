@@ -51,7 +51,7 @@ export const workerListings = [
     fullName: 'Mehmet Yıldız',
     occupation: 'Kaynak Ustası',
     age: 34,
-    city: 'Bolu',
+    city: 'Bolu',h
     workAreas: ['Gazaltı kaynak', 'Elektrot kaynak', 'Çelik montaj'],
     phone: '+905301234567',
     experience: '12 yıl',
